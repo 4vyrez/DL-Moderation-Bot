@@ -1,0 +1,22 @@
+{
+  "name": "diamond-life-moderation-bot",
+  "version": "1.0.0",
+  "description": "Moderation bot for Diamond Life FiveM server",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js"
+  },
+  "keywords": [
+    "discord",
+    "bot",
+    "moderation",
+    "fivem"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^14.14.1",
+    "dotenv": "^16.4.1"
+  }
+}
