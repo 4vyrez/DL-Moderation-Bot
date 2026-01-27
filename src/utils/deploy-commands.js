@@ -26,24 +26,32 @@ function readCommands(dir) {
 
 readCommands(commandsPath);
 
-const rest = new REST().setToken(process.env.DISCORD_TOKEN);
+const GUILD_IDS = [
+    '1464322386458444083', // DiamondLife
+    '1465002396257222868', // Police DiamondLife
+    '825863658147545189'   // Medical DiamondLife
+];
 
 (async () => {
     try {
         console.log(`Started refreshing ${commands.length} application (/) commands.`);
 
-        // The put method is used to fully refresh all commands in the guild with the current set
-        // Note: For global commands, use Routes.applicationCommands(clientId)
-        // For guild-specific commands (faster updates during dev), use Routes.applicationGuildCommands(clientId, guildId)
+        const rest = new REST().setToken(process.env.DISCORD_TOKEN);
 
-        // Using global commands for now as guildId might not be set in .env yet
-        // If you want guild specific, add GUILD_ID to .env and change this line
-        const data = await rest.put(
-            Routes.applicationCommands(process.env.CLIENT_ID),
-            { body: commands },
-        );
+        for (const guildId of GUILD_IDS) {
+            try {
+                console.log(`Registering commands for Guild ID: ${guildId}`);
+                const data = await rest.put(
+                    Routes.applicationGuildCommands(process.env.CLIENT_ID, guildId),
+                    { body: commands },
+                );
+                console.log(`Successfully reloaded ${data.length} commands for guild ${guildId}.`);
+            } catch (error) {
+                console.error(`Failed to register commands for guild ${guildId}:`, error);
+            }
+        }
 
-        console.log(`Successfully reloaded ${data.length} application (/) commands.`);
+        console.log('All guild command registrations completed.');
     } catch (error) {
         console.error(error);
     }

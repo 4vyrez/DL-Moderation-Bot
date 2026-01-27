@@ -1,54 +1,56 @@
-# Easiest Ways to Host Your Bot
+# Easiest Ways to Host Your Bot 24/7 (2026 Edition)
 
-Since the Oracle Cloud method was too complex, here are two **much easier** ways to host your bot.
+Here are the best ways to run your bot 24/7, specifically chosen for being free or very cheap.
 
-## Option 1: Host Locally (Recommended & Easiest)
-**Best for:** Beginners, full control, $0 cost.
-**Requirement:** Your PC must be on for the bot to be online.
+## Option 1: Wispbyte (Best "Forever Free" - No Credit Card)
+**Best for:** Totally free hosting without needing a credit card.
+**Pros:** 24/7 online, 1GB storage, 0.5GB RAM (enough for this bot).
+**Cons:** Community support only.
 
-We valid use a tool called **PM2**. It runs your bot in the background, restarts it if it crashes, and starts it automatically when your PC turns on.
+1.  **Register:** Go to [Wispbyte.com](https://wispbyte.com/) and sign up.
+2.  **Create Server:**
+    *   Create a new server.
+    *   Choose **Node.js** as the type.
+3.  **Upload Files:**
+    *   Use their File Manager (or SFTP) to upload all files inside `src/`.
+    *   Upload `package.json` and `.env`.
+    *   **Do NOT** upload `node_modules` (the server installs them).
+4.  **Start:**
+    *   In the Console/Startup tab, ensure the start command is `node src/index.js`.
+    *   Click Start.
 
-### Setup (I can do this for you!)
-1.  **Open Terminal** in your project folder.
-2.  **Install PM2**:
+## Option 2: Discloud (Alternative Free)
+**Best for:** Simple backup option if Wispbyte is full.
+**Pros:** True 24/7.
+**Cons:** 100MB RAM limit (very low), ads in status.
+
+1.  **Website:** Go to [discloudbot.com](https://discloudbot.com/).
+2.  **Upload:** You can upload your files directly or use their VSCode extension.
+3.  **Config:** You might need a `discloud.config` file (check their docs).
+
+## Option 3: Bot-Hosting.net (Great Free Tier)
+**Best for:** Easy setup, often has free slots.
+1.  Login with Discord at [Bot-Hosting.net](https://bot-hosting.net/).
+2.  Create a free Node.js server.
+3.  Upload files (skip `node_modules`).
+4.  Start!
+
+## Option 4: Host Locally (Your PC)
+**Best for:** Testing / Full Control.
+**Requirement:** PC must stay on.
+
+**Fix for your error:** You ran `pm2 start app.js`, but your main file is `src/index.js`.
+
+**Correct Commands:**
+1.  **Delete old failed entry:**
     ```powershell
-    npm install pm2 -g
+    pm2 delete all
     ```
-3.  **Start Your Bot**:
+2.  **Start correctly:**
     ```powershell
     pm2 start src/index.js --name "DL-Bot"
     ```
-4.  **Save List** (so it remembers):
+3.  **Save:**
     ```powershell
     pm2 save
     ```
-
-**Managing the Bot:**
-*   `pm2 list`: See status.
-*   `pm2 logs DL-Bot`: View the console output.
-*   `pm2 restart DL-Bot`: Restart after you edit code.
-*   `pm2 stop DL-Bot`: Turn it off.
-
----
-
-## Option 2: Koyeb (Easiest Cloud)
-**Best for:** 24/7 uptime without your PC.
-**Requirement:** GitHub account.
-
-Koyeb is a modern cloud host. You don't need to manage a server; you just connect your GitHub.
-
-1.  **Upload to GitHub**:
-    *   Create a repository on [GitHub](https://github.com).
-    *   Upload your bot code to it.
-2.  **Sign up for Koyeb**:
-    *   Go to [Koyeb.com](https://www.koyeb.com/) and sign in with GitHub.
-3.  **Deploy**:
-    *   Click **"Create App"**.
-    *   Select **GitHub** as the source.
-    *   Choose your bot's repository.
-    *   Koyeb will detect it's a Node.js app.
-    *   **Environment Variables**: You MUST add your secrets here!
-        *   Click "Add Variable" for `DISCORD_TOKEN`, `CLIENT_ID`, etc.
-    *   Click **"Deploy"**.
-
-Your bot will now run 24/7 for free!
