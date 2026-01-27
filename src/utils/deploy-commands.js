@@ -6,18 +6,25 @@ require('dotenv').config({ path: path.join(__dirname, '../../.env') });
 const commands = [];
 const commandsPath = path.join(__dirname, '../commands');
 
-// Recursively reading command files might be overkill for now but good for consistency
-// Simpler version for this utility as it usually runs standalone
-const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
-
-for (const file of commandFiles) {
-    const command = require(`../commands/${file}`);
-    if ('data' in command && 'execute' in command) {
-        commands.push(command.data.toJSON());
-    } else {
-        console.log(`[WARNING] The command at ${file} is missing a required "data" or "execute" property.`);
+function readCommands(dir) {
+    const files = fs.readdirSync(dir);
+    for (const file of files) {
+        const filePath = path.join(dir, file);
+        const stat = fs.statSync(filePath);
+        if (stat.isDirectory()) {
+            readCommands(filePath);
+        } else if (file.endsWith('.js')) {
+            const command = require(filePath);
+            if ('data' in command && 'execute' in command) {
+                commands.push(command.data.toJSON());
+            } else {
+                console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
+            }
+        }
     }
 }
+
+readCommands(commandsPath);
 
 const rest = new REST().setToken(process.env.DISCORD_TOKEN);
 

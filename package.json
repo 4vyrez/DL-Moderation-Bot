@@ -1,11 +1,12 @@
 {
   "name": "diamond-life-moderation-bot",
   "version": "1.0.0",
-  "description": "Moderation bot for Diamond Life FiveM server",
+  "description": "Der ultimative Wächter für DiamondLife – Dein Partner für sicheres und faires Roleplay.",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "dev": "nodemon src/index.js",
+    "deploy": "node src/utils/deploy-commands.js"
   },
   "keywords": [
     "discord",
