@@ -75,28 +75,56 @@ class QueueManager {
      * Update nicknames for all users in the queue
      * @param {Guild} guild 
      */
+    /**
+     * Update nicknames for all users in the queue
+     * @param {Guild} guild 
+     */
     async updateNicknames(guild) {
+        if (this.updateTimer) {
+            clearTimeout(this.updateTimer);
+        }
+
+        // Debounce: Wait 2 seconds after the last activity before updating everyone
+        // This prevents API rate limits during bursts of joins/leaves
+        this.updateTimer = setTimeout(async () => {
+            this.updateTimer = null;
+            await this.processNicknameUpdates(guild);
+        }, 2000);
+    }
+
+    async processNicknameUpdates(guild) {
         if (this.processing) return;
         this.processing = true;
 
         try {
+            // Check bot permissions once
+            const me = guild.members.me;
+            if (!me.permissions.has('ManageNicknames')) {
+                console.warn(`[QueueManager] Missing ManageNicknames permission in guild ${guild.id}`);
+                return;
+            }
+
             for (let i = 0; i < this.queue.length; i++) {
                 const { userId } = this.queue[i];
                 const position = i + 1;
 
                 try {
-                    const member = await guild.members.fetch(userId);
+                    // Use cache first
+                    let member = guild.members.cache.get(userId);
+                    if (!member) {
+                        member = await guild.members.fetch(userId).catch(() => null);
+                    }
                     if (!member) continue;
 
                     const originalName = this.originalNicknames.get(userId) || member.user.username;
-                    const newNickname = `[${position}] ${originalName}`.substring(0, 32); // Discord limit
+                    const newNickname = `[${position}] ${originalName}`.substring(0, 32);
 
-                    if (member.manageable && member.guild.members.me.permissions.has('ManageNicknames')) {
+                    if (member.manageable) {
                         if (member.nickname !== newNickname) {
                             await member.setNickname(newNickname);
+                            // Small delay to be nice to API
+                            await new Promise(resolve => setTimeout(resolve, 500));
                         }
-                    } else {
-                        console.warn(`[QueueManager] Cannot manage nickname for ${member.user.tag}`);
                     }
                 } catch (err) {
                     console.error(`[QueueManager] Error updating user ${userId}:`, err);

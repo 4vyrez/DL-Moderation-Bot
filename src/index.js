@@ -3,6 +3,17 @@ const { Client, GatewayIntentBits, Collection } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
 
+const { loadCommands } = require('./utils/commandLoader');
+
+// Global Error Handlers to prevent crash
+process.on('uncaughtException', (err) => {
+    console.error('[FATAL] Uncaught Exception:', err);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('[FATAL] Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
@@ -16,29 +27,13 @@ const client = new Client({
 client.commands = new Collection();
 const commandsPath = path.join(__dirname, 'commands');
 
-// Function to recursively read command files
-function readCommands(dir) {
-    const files = fs.readdirSync(dir);
-    for (const file of files) {
-        const filePath = path.join(dir, file);
-        const stat = fs.statSync(filePath);
-        if (stat.isDirectory()) {
-            readCommands(filePath);
-        } else if (file.endsWith('.js')) {
-            const command = require(filePath);
-            if ('data' in command && 'execute' in command) {
-                client.commands.set(command.data.name, command);
-                console.log(`[INFO] Loaded command ${command.data.name}`);
-            } else {
-                console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
-            }
-        }
-    }
-}
-
-// Create commands directory if it doesn't exist
+// Load commands using shared utility
 if (fs.existsSync(commandsPath)) {
-    readCommands(commandsPath);
+    const loaded = loadCommands(commandsPath);
+    for (const { command } of loaded) {
+        client.commands.set(command.data.name, command);
+        console.log(`[INFO] Loaded command ${command.data.name}`);
+    }
 }
 
 const eventsPath = path.join(__dirname, 'events');

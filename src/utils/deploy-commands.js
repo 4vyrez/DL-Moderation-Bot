@@ -1,30 +1,21 @@
 const { REST, Routes } = require('discord.js');
-const fs = require('fs');
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '../../.env') });
+const { loadCommands } = require('./commandLoader');
 
-const commands = [];
-const commandsPath = path.join(__dirname, '../commands');
-
-function readCommands(dir) {
-    const files = fs.readdirSync(dir);
-    for (const file of files) {
-        const filePath = path.join(dir, file);
-        const stat = fs.statSync(filePath);
-        if (stat.isDirectory()) {
-            readCommands(filePath);
-        } else if (file.endsWith('.js')) {
-            const command = require(filePath);
-            if ('data' in command && 'execute' in command) {
-                commands.push(command.data.toJSON());
-            } else {
-                console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
-            }
-        }
-    }
+// Validate Environment Variables
+if (!process.env.DISCORD_TOKEN) {
+    console.error('[ERROR] DISCORD_TOKEN is missing in .env file.');
+    process.exit(1);
+}
+if (!process.env.CLIENT_ID) {
+    console.error('[ERROR] CLIENT_ID is missing in .env file.');
+    process.exit(1);
 }
 
-readCommands(commandsPath);
+const commandsPath = path.join(__dirname, '../commands');
+const loaded = loadCommands(commandsPath);
+const commands = loaded.map(c => c.command.data.toJSON());
 
 const GUILD_IDS = [
     '1464322386458444083', // DiamondLife
@@ -47,12 +38,14 @@ const GUILD_IDS = [
                 );
                 console.log(`Successfully reloaded ${data.length} commands for guild ${guildId}.`);
             } catch (error) {
-                console.error(`Failed to register commands for guild ${guildId}:`, error);
+                console.error(`[ERROR] Failed to register commands for guild ${guildId}. Warning: Make sure the bot is in this guild.`);
+                console.error(`Details: ${error.message}`);
+                // Don't stop the loop, try other guilds
             }
         }
 
         console.log('All guild command registrations completed.');
     } catch (error) {
-        console.error(error);
+        console.error('[FATAL ERROR] Deployment failed:', error);
     }
 })();
